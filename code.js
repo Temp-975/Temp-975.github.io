@@ -20,6 +20,17 @@ function connectPeer() {
     remoteConnection = new RTCPeerConnection();
     remoteConnection.ondatachannel = receiveChannelCallback;
     
-    localConnection.onicecandidate = e => !e.candidate || remoteConnection.addIceCandidate(e.candidate(e.candidate)
+    localConnection.onicecandidate = e => !e.candidate || remoteConnection.addIceCandidate(e.candidate(e.candidate).catch(handleAddCandidateError);
+    remoteConnection.onicecandidate = e => !e.candidate
+        || localConnection.addIceCandidate(e.candidate)
+        .catch(handleAddCandidateError);
+    
+    localConnection.createOffer()
+        .then(offer => localConnection.setLocalDescription(offer))
+        .then(() => remoteConnection.setRemoteDescription(localConection.localDescription))
+        .then(() => remoteConnection.createAnswer())
+        .then(answer => remoteConnection.setLocalDescription(answer))
+        .then(() => localConnection.setRemoteDescription(remoteConnection.localDescription))
+        .catch(handleCreateDescriptionError);
     
 }
